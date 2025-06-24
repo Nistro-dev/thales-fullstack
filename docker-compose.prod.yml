@@ -1,0 +1,75 @@
+services:
+  lamypower_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://api.lamypower.codeforgestudio.fr/api
+    container_name: lamypower_frontend_prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lamypower_frontend_prod.rule=Host(`lamypower.codeforgestudio.fr`)"
+      - "traefik.http.routers.lamypower_frontend_prod.entrypoints=websecure"
+      - "traefik.http.routers.lamypower_frontend_prod.tls=true"
+      - "traefik.http.routers.lamypower_frontend_prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lamypower_frontend_prod.loadbalancer.server.port=80"
+    networks:
+      - web
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  lamypower_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lamypower_backend_prod
+    volumes:
+      - lamypower_uploads_prod:/app/uploads
+    environment:
+      - PORT=3000
+      - BASE_URL=https://api.lamypower.codeforgestudio.fr
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_SECURE=false
+      - SMTP_USER=smtp.test.developpement@gmail.com
+      - SMTP_PASS=ycll wlkh edhs tubp
+      - SMTP_FROM="LAMY POWER" <smtp.test.developpement@gmail.com>
+      - FRONTEND_URL=https://lamypower.codeforgestudio.fr
+      - ADMIN_EMAIL=contact@lamypower.fr
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lamypower_backend_prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lamypower_backend_prod.loadbalancer.server.port=3000"
+      - "traefik.http.routers.lamypower_backend_prod.rule=Host(`api.lamypower.codeforgestudio.fr`)"
+      - "traefik.http.routers.lamypower_backend_prod.entryPoints=websecure"
+      - "traefik.http.routers.lamypower_backend_prod.tls=true"
+      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolalloworiginlist=https://lamypower.codeforgestudio.fr"
+      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolallowcredentials=true"
+      - "traefik.http.routers.lamypower_backend_prod.middlewares=lamypower_backend_prod"
+    networks:
+      - web
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  web:
+    external: true
+
+volumes:
+  lamypower_uploads_prod:
+    driver: local

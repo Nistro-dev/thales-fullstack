@@ -55,9 +55,9 @@ jobs:
         if: failure()
         run: |
           echo "=== Backend Logs ==="
-          docker-compose -f docker-compose.test.yml logs lamypower_backend_test || true
+          docker-compose -f docker-compose.test.yml logs thales_backend_test || true
           echo "=== Frontend Logs ==="
-          docker-compose -f docker-compose.test.yml logs lamypower_frontend_test || true
+          docker-compose -f docker-compose.test.yml logs thales_frontend_test || true
           echo "=== MySQL Logs ==="
           docker-compose -f docker-compose.test.yml logs mysql_test || true
 

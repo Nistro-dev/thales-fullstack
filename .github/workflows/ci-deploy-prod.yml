@@ -10,8 +10,8 @@ on:
     branches: [ main ]
 
 env:
-  PROJECT_NAME: lamypower
-  REMOTE_PATH: /srv/projects/lamypower/prod
+  PROJECT_NAME: thales
+  REMOTE_PATH: /srv/projects/thales/prod
   COMPOSE_FILE: docker-compose.prod.yml
   DB_HOST: ${{ secrets.DB_HOST }}
   DB_USER: ${{ secrets.DB_USER_PROD }}
