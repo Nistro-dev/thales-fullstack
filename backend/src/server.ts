@@ -44,6 +44,16 @@ async function buildApp() {
 
   // Enregistrement des routes
   await fastify.register(healthRoutes, { prefix: '/api' })
+  
+  // Route de health directe pour les health checks Docker
+  fastify.get('/health', async () => {
+    return {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: process.env.npm_package_version ?? '1.0.0'
+    }
+  })
 
   return fastify
 }

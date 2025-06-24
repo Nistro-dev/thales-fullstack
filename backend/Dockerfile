@@ -25,9 +25,7 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=builder /app/dist ./dist
 COPY wait-for-mysql.sh ./wait-for-mysql.sh
 
-# Create uploads directory with subdirectories and set permissions
-RUN mkdir -p /app/uploads/documents /app/uploads/products /app/uploads/products/thumbnails && \
-    chmod +x ./wait-for-mysql.sh
+RUN chmod +x ./wait-for-mysql.sh
 
 ENV NODE_ENV=production
 ENV PORT=3000

@@ -4,7 +4,7 @@
 DB_HOST=${DB_HOST:-localhost}
 DB_PORT=${DB_PORT:-3306}
 DB_USER=${DB_USER:-root}
-DB_PASS=${DB_PASS:-}
+DB_PASSWORD=${DB_PASSWORD:-}
 
 if [ "$NODE_ENV" = "integration_test" ] || [ "$NODE_ENV" = "test" ]; then
     echo "🔍 Attente de MySQL en mode test ($NODE_ENV)..."
@@ -36,7 +36,7 @@ if [ "$NODE_ENV" = "integration_test" ] || [ "$NODE_ENV" = "test" ]; then
     if command -v mysql >/dev/null 2>&1; then
         timeout=30
         count=0
-        until mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASS" -e "SELECT 1;" >/dev/null 2>&1 || [ $count -eq $timeout ]; do
+        until mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1 || [ $count -eq $timeout ]; do
             echo "⏳ MySQL n'accepte pas encore les connexions... ($count/$timeout)"
             sleep 2
             count=$((count + 1))

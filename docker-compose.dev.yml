@@ -34,7 +34,7 @@ services:
       - BASE_URL=https://api.thales.dev.codeforgestudio.fr
       - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
       - SMTP_HOST=smtp.gmail.com

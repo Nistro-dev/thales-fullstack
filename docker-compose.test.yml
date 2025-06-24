@@ -32,7 +32,7 @@ services:
       - PORT=3000
       - DB_HOST=mysql_test
       - DB_USER=test_user
-      - DB_PASS=test_password
+      - DB_PASSWORD=test_password
       - DB_NAME=thales_test
       - DB_PORT=3306
       - JWT_SECRET=test_jwt_secret_key_for_testing_only
