@@ -216,16 +216,16 @@ test_service_connectivity() {
             docker-compose -f $COMPOSE_FILE exec -T mysql_test mysqladmin ping -h localhost >/dev/null 2>&1
             return $?
             ;;
-        "lamypower_backend_test")
+        "thales_backend_test")
             # Test de l'endpoint health
-            docker run --rm --network lamypower_test_network curlimages/curl:latest \
-                -s -f http://lamypower_backend_test:3000/health >/dev/null 2>&1
+            docker run --rm --network thales_test_network curlimages/curl:latest \
+                -s -f http://thales_backend_test:3000/health >/dev/null 2>&1
             return $?
             ;;
-        "lamypower_frontend_test")
+        "thales_frontend_test")
             # Test que nginx répond
-            docker run --rm --network lamypower_test_network curlimages/curl:latest \
-                -s -f http://lamypower_frontend_test:80 >/dev/null 2>&1
+            docker run --rm --network thales_test_network curlimages/curl:latest \
+                -s -f http://thales_frontend_test:80 >/dev/null 2>&1
             return $?
             ;;
         *)
@@ -242,7 +242,7 @@ test_endpoint() {
     
     echo "🔍 Test: $description"
     
-    response=$(docker run --rm --network lamypower_test_network curlimages/curl:latest \
+    response=$(docker run --rm --network thales_test_network curlimages/curl:latest \
         -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
     
     if [ "$response" = "$expected_status" ]; then
@@ -257,7 +257,7 @@ test_endpoint() {
 # Vérifier les services un par un
 echo "🏥 Vérification de la santé des services..."
 
-services=("mysql_test" "lamypower_backend_test" "lamypower_frontend_test")
+services=("mysql_test" "thales_backend_test" "thales_frontend_test")
 for service in "${services[@]}"; do
     if ! check_service_health "$service"; then
         echo "❌ Échec du test d'intégration: Service $service non healthy"
@@ -271,17 +271,17 @@ done
 echo "🌐 Tests des endpoints..."
 
 # Test du health check du backend
-if ! test_endpoint "http://lamypower_backend_test:3000/health" "200" "Backend Health Check"; then
+if ! test_endpoint "http://thales_backend_test:3000/health" "200" "Backend Health Check"; then
     exit 1
 fi
 
 # Test du frontend
-if ! test_endpoint "http://lamypower_frontend_test:80" "200" "Frontend Accessibility"; then
+if ! test_endpoint "http://thales_frontend_test:80" "200" "Frontend Accessibility"; then
     exit 1
 fi
 
 # Test de l'API Swagger (si disponible)
-if ! test_endpoint "http://lamypower_backend_test:3000/api-docs.json" "200" "Swagger Documentation"; then
+if ! test_endpoint "http://thales_backend_test:3000/api-docs.json" "200" "Swagger Documentation"; then
     echo "⚠️  Swagger documentation non accessible (non critique)"
 fi
 

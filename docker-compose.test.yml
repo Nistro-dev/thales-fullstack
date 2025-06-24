@@ -1,10 +1,10 @@
 services:
   mysql_test:
     image: mysql:8.0
-    container_name: lamypower_mysql_test
+    container_name: thales_mysql_test
     environment:
       MYSQL_ROOT_PASSWORD: test_root_password
-      MYSQL_DATABASE: lamypower_test
+      MYSQL_DATABASE: thales_test
       MYSQL_USER: test_user
       MYSQL_PASSWORD: test_password
     ports:
@@ -20,20 +20,20 @@ services:
     networks:
       - test_network
 
-  lamypower_backend_test:
+  thales_backend_test:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: lamypower_backend_test
+    container_name: thales_backend_test
     volumes:
-      - lamypower_uploads_test:/app/uploads
+      - thales_uploads_test:/app/uploads
     environment:
       - NODE_ENV=integration_test
       - PORT=3000
       - DB_HOST=mysql_test
       - DB_USER=test_user
       - DB_PASS=test_password
-      - DB_NAME=lamypower_test
+      - DB_NAME=thales_test
       - DB_PORT=3306
       - JWT_SECRET=test_jwt_secret_key_for_testing_only
     depends_on:
@@ -48,13 +48,13 @@ services:
     networks:
       - test_network
 
-  lamypower_frontend_test:
+  thales_frontend_test:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: lamypower_frontend_test
+    container_name: thales_frontend_test
     depends_on:
-      lamypower_backend_test:
+      thales_backend_test:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
@@ -68,7 +68,7 @@ services:
 volumes:
   mysql_test_data:
     driver: local
-  lamypower_uploads_test:
+  thales_uploads_test:
     driver: local
 
 networks:

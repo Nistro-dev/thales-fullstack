@@ -1,18 +1,18 @@
 services:
-  lamypower_frontend:
+  thales_frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: https://api.lamypower.codeforgestudio.fr/api
-    container_name: lamypower_frontend_prod
+        VITE_API_URL: https://api.thales.codeforgestudio.fr/api
+    container_name: thales_frontend_prod
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.lamypower_frontend_prod.rule=Host(`lamypower.codeforgestudio.fr`)"
-      - "traefik.http.routers.lamypower_frontend_prod.entrypoints=websecure"
-      - "traefik.http.routers.lamypower_frontend_prod.tls=true"
-      - "traefik.http.routers.lamypower_frontend_prod.tls.certresolver=letsencrypt"
-      - "traefik.http.services.lamypower_frontend_prod.loadbalancer.server.port=80"
+      - "traefik.http.routers.thales_frontend_prod.rule=Host(`thales.codeforgestudio.fr`)"
+      - "traefik.http.routers.thales_frontend_prod.entrypoints=websecure"
+      - "traefik.http.routers.thales_frontend_prod.tls=true"
+      - "traefik.http.routers.thales_frontend_prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.thales_frontend_prod.loadbalancer.server.port=80"
     networks:
       - web
     restart: always
@@ -22,16 +22,16 @@ services:
       timeout: 10s
       retries: 5
 
-  lamypower_backend:
+  thales_backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: lamypower_backend_prod
+    container_name: thales_backend_prod
     volumes:
-      - lamypower_uploads_prod:/app/uploads
+      - thales_uploads_prod:/app/uploads
     environment:
       - PORT=3000
-      - BASE_URL=https://api.lamypower.codeforgestudio.fr
+      - BASE_URL=https://api.thales.codeforgestudio.fr
       - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
@@ -43,20 +43,20 @@ services:
       - SMTP_USER=smtp.test.developpement@gmail.com
       - SMTP_PASS=ycll wlkh edhs tubp
       - SMTP_FROM="LAMY POWER" <smtp.test.developpement@gmail.com>
-      - FRONTEND_URL=https://lamypower.codeforgestudio.fr
-      - ADMIN_EMAIL=contact@lamypower.fr
+      - FRONTEND_URL=https://thales.codeforgestudio.fr
+      - ADMIN_EMAIL=contact@thales.fr
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.lamypower_backend_prod.tls.certresolver=letsencrypt"
-      - "traefik.http.services.lamypower_backend_prod.loadbalancer.server.port=3000"
-      - "traefik.http.routers.lamypower_backend_prod.rule=Host(`api.lamypower.codeforgestudio.fr`)"
-      - "traefik.http.routers.lamypower_backend_prod.entryPoints=websecure"
-      - "traefik.http.routers.lamypower_backend_prod.tls=true"
-      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolalloworiginlist=https://lamypower.codeforgestudio.fr"
-      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolallowheaders=Content-Type,Authorization"
-      - "traefik.http.middlewares.lamypower_backend_prod.headers.accesscontrolallowcredentials=true"
-      - "traefik.http.routers.lamypower_backend_prod.middlewares=lamypower_backend_prod"
+      - "traefik.http.routers.thales_backend_prod.tls.certresolver=letsencrypt"
+      - "traefik.http.services.thales_backend_prod.loadbalancer.server.port=3000"
+      - "traefik.http.routers.thales_backend_prod.rule=Host(`api.thales.codeforgestudio.fr`)"
+      - "traefik.http.routers.thales_backend_prod.entryPoints=websecure"
+      - "traefik.http.routers.thales_backend_prod.tls=true"
+      - "traefik.http.middlewares.thales_backend_prod.headers.accesscontrolalloworiginlist=https://thales.codeforgestudio.fr"
+      - "traefik.http.middlewares.thales_backend_prod.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.thales_backend_prod.headers.accesscontrolallowheaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.thales_backend_prod.headers.accesscontrolallowcredentials=true"
+      - "traefik.http.routers.thales_backend_prod.middlewares=thales_backend_prod"
     networks:
       - web
     restart: always
@@ -71,5 +71,5 @@ networks:
     external: true
 
 volumes:
-  lamypower_uploads_prod:
+  thales_uploads_prod:
     driver: local
