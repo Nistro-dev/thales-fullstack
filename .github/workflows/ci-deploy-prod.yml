@@ -1,0 +1,154 @@
+name: CI & Deploy Prod & Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PROJECT_NAME: lamypower
+  REMOTE_PATH: /srv/projects/lamypower/prod
+  COMPOSE_FILE: docker-compose.prod.yml
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_USER: ${{ secrets.DB_USER_DEV }}
+  DB_PASS: ${{ secrets.DB_PASS_DEV }}
+  DB_NAME: ${{ secrets.DB_NAME_DEV }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+
+jobs:
+  backend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - name: Update lockfile
+        run: pnpm install --lockfile-only
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm run lint
+      - name: Test
+        run: pnpm run test
+      - name: Build
+        run: pnpm run build
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - name: Update lockfile
+        run: pnpm install --lockfile-only
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm run lint
+      - name: Test
+        run: pnpm run test
+      - name: Build
+        run: pnpm run build
+
+  docker-integration-tests:
+    needs: [backend-build, frontend-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.21.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Install jq for JSON parsing
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run Docker Compose Integration Tests
+        run: |
+          chmod +x ./scripts/test-docker-integration.sh
+          ./scripts/test-docker-integration.sh
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-integration-test-logs-prod
+          path: |
+            docker-compose.test.yml
+            scripts/test-docker-integration.sh
+
+  deploy:
+    needs: [backend-build, frontend-build, docker-integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to server via SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "."
+          target: "${{ env.REMOTE_PATH }}"
+
+      - name: Run Docker Compose on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: DB_HOST,DB_USER,DB_PASS,DB_NAME,DB_PORT
+          script: |
+            cd ${{ env.REMOTE_PATH }}
+            docker compose -f ${{ env.REMOTE_PATH }}/${{ env.COMPOSE_FILE }} down
+
+            docker compose -f ${{ env.REMOTE_PATH }}/${{ env.COMPOSE_FILE }} up -d --build
+            docker image prune -f
+
+  release:
+    needs: deploy
+    name: Create GitHub Release & Tag
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    outputs:
+      release_tag: ${{ steps.get_version.outputs.tag }}
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v3
+
+      - name: Générer un tag basé sur la date et le commit
+        id: get_version
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          DATE=$(date +'%Y-%m-%d')
+          TAG="v${DATE}-${SHORT_SHA}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Créer un tag Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ steps.get_version.outputs.tag }}
+          git push origin ${{ steps.get_version.outputs.tag }}
+
+      - name: Créer une release GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag }}

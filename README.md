@@ -1,5 +1,8 @@
 # Thales Project
 
+[![CI Production](https://github.com/USERNAME/thales/actions/workflows/ci-deploy-prod.yml/badge.svg?branch=main)](https://github.com/USERNAME/thales/actions/workflows/ci-deploy-prod.yml)
+[![CI Development](https://github.com/USERNAME/thales/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/USERNAME/thales/actions/workflows/ci-dev.yml)
+
 Un projet fullstack moderne avec React et Fastify.
 
 ## 🏗️ Architecture
@@ -107,11 +110,38 @@ thales/
 - `pnpm dev` - Serveur de développement
 - `pnpm build` - Build de production
 - `pnpm preview` - Prévisualisation du build
+- `pnpm lint` - Linting ESLint
+- `pnpm test` - Tests unitaires
+- `pnpm type-check` - Vérification des types TypeScript
 
 ### Backend
 - `pnpm dev` - Serveur de développement avec auto-reload
 - `pnpm build` - Compilation TypeScript
 - `pnpm start` - Démarrage en production
+- `pnpm lint` - Linting ESLint
+- `pnpm test` - Tests unitaires
+- `pnpm type-check` - Vérification des types TypeScript
+
+### Projet global
+- `./test-all.sh` - Lance tous les tests frontend et backend
+
+## 🚀 CI/CD
+
+Le projet utilise GitHub Actions pour l'intégration continue et le déploiement :
+
+### Workflow Production (main)
+- **Triggers** : Push sur `main`, PR vers `main`
+- **Jobs** : Lint, Test, Build, Docker, Deploy, Release
+- **Environnements** : Production avec protection
+
+### Workflow Development (dev)
+- **Triggers** : Push sur `dev`, PR vers `dev`
+- **Jobs** : Lint, Test, Build, Docker Build, Security Scan, Type Check
+- **Artéfacts** : Sauvegarde des builds (7 jours)
+
+### Protection des branches
+- `main` : Protégée, nécessite review et CI réussi
+- `dev` : Branch de développement principal
 
 ## 🔧 Technologies utilisées
 
@@ -146,22 +176,36 @@ thales/
 - [x] Composant de statut API
 - [x] Service API avec gestion d'erreurs
 - [x] Architecture maintenable et scalable
+- [x] Tests unitaires (Vitest + Testing Library)
+- [x] Linting et formatting (ESLint + Prettier)
+- [x] CI/CD GitHub Actions
+- [x] Workflows différenciés main/dev
+- [x] Build et déploiement automatisés
 
 ### 🚧 À venir
 - [ ] Authentification JWT
 - [ ] CRUD utilisateurs
 - [ ] Upload de fichiers avec Multer
-- [ ] Tests unitaires
-- [ ] Déploiement Docker
-- [ ] CI/CD
+- [ ] Déploiement Docker en production
+- [ ] Tests d'intégration
+- [ ] Monitoring et logs
 
 ## 🤝 Contribution
 
+### Workflow de développement
 1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+2. Créer une branche feature depuis `dev` (`git checkout -b feature/AmazingFeature`)
+3. Développer et tester localement
+4. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+5. Push vers la branche (`git push origin feature/AmazingFeature`)
+6. Ouvrir une Pull Request vers `dev`
+7. Après review et merge dans `dev`, créer une PR de `dev` vers `main` pour la production
+
+### Standards de code
+- Respecter les configurations ESLint et Prettier
+- Écrire des tests unitaires pour les nouvelles fonctionnalités
+- Utiliser des commits conventionnels (feat, fix, docs, etc.)
+- Documenter les APIs avec Swagger
 
 ## 📜 Licence
 

@@ -1,0 +1,68 @@
+name: Docker Integration Tests
+
+on:
+  pull_request:
+    branches: [ dev, main ]
+  workflow_dispatch:
+  schedule:
+    # Exécuter les tests d'intégration tous les jours à 6h UTC
+    - cron: '0 6 * * *'
+
+jobs:
+  docker-integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.21.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          docker system prune -af
+
+      - name: Run Docker Compose Integration Tests
+        run: |
+          chmod +x ./scripts/test-docker-integration.sh
+          ./scripts/test-docker-integration.sh
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-integration-test-logs-${{ github.run_id }}
+          path: |
+            docker-compose.test.yml
+            scripts/test-docker-integration.sh
+          retention-days: 7
+
+      - name: Display Docker logs on failure
+        if: failure()
+        run: |
+          echo "=== Backend Logs ==="
+          docker-compose -f docker-compose.test.yml logs lamypower_backend_test || true
+          echo "=== Frontend Logs ==="
+          docker-compose -f docker-compose.test.yml logs lamypower_frontend_test || true
+          echo "=== MySQL Logs ==="
+          docker-compose -f docker-compose.test.yml logs mysql_test || true
+
+      - name: Cleanup Docker resources
+        if: always()
+        run: |
+          docker-compose -f docker-compose.test.yml down -v --remove-orphans || true
+          docker system prune -af || true
