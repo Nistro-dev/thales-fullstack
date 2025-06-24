@@ -9,9 +9,9 @@ env:
   REMOTE_PATH: /srv/projects/lamypower/dev
   COMPOSE_FILE: docker-compose.dev.yml
   DB_HOST: ${{ secrets.DB_HOST }}
-  DB_USER: ${{ secrets.DB_USER_PROD }}
-  DB_PASS: ${{ secrets.DB_PASS_PROD }}
-  DB_NAME: ${{ secrets.DB_NAME_PROD }}
+  DB_USER: ${{ secrets.DB_USER_DEV }}
+  DB_PASS: ${{ secrets.DB_PASS_DEV }}
+  DB_NAME: ${{ secrets.DB_NAME_DEV }}
   DB_PORT: ${{ secrets.DB_PORT }}
 
 jobs:
